@@ -28,7 +28,7 @@ while t<10*365*daysec:
     ################ earth #############
     # compute G force on earth
     rx,ry,rz = xe - xs, ye - ys, ze - zs
-    modr3_e = (rx**2+ry**2+rz**2)**0.5
+    modr3_e = (rx**2+ry**2+rz**2)**1.5
     fx_e = -gravconst_e*rx/modr3_e
     fy_e = -gravconst_e*ry/modr3_e
     fz_e = -gravconst_e*rz/modr3_e
@@ -65,7 +65,7 @@ while t<10*365*daysec:
     # update dt
     t +=dt
     
-    
+
 import matplotlib.pyplot as plt
 from matplotlib import animation
 
@@ -113,3 +113,4 @@ anim = animation.FuncAnimation(fig
                                 ,interval=1
                                 ,blit=True)
 plt.show()
+

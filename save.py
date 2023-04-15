@@ -11,7 +11,13 @@ t = 0.0
 dt = 1*sec_jour
 AU = 1.5E11
 
-# Probème : calcul déplacement a chaque exe et non uniquement les projections des forces
+
+
+
+
+
+
+
 
 file = open('data2.csv')
 reader = csv.DictReader(file, delimiter=',')
@@ -25,7 +31,7 @@ class Astre:
         self.x, self.y, self.z = self.distance, 0.0, 0.0        # Position sur le plan
         self.vx, self.vy, self.vz = 0.0, self.vitesse, 0.0      # Vitesse sur les axes
         self.listpos = [[],[],[]]                               # Liste des positions succésives de l'astre pour afficher l'orbite
-        self.fx, self.fy, self.fz = 0.0, 0.0, 0.0
+        self.test = []
         
 data = [dict(row) for row in reader]
 
@@ -50,8 +56,6 @@ file.close()
 while t<10*365*sec_jour:
     for astre1 in range(len(liste_astres)-1):
         for astre2 in range(astre1+1, len(liste_astres)):
-            astre1 = 'Terre'
-            astre2 = 'Soleil'
             # Calcul du vecteur unitaire (u) entre l'astre 1 et l'astre 2
             # Calcul distance séparant les 2 astres sur chaque axe, vecteur astre1 --> astre2
             ux, uy, uz = astres[liste_astres[astre1]].x - astres[liste_astres[astre2]].x, astres[liste_astres[astre1]].y - astres[liste_astres[astre2]].y, astres[liste_astres[astre1]].z - astres[liste_astres[astre2]].z
@@ -59,42 +63,44 @@ while t<10*365*sec_jour:
             normeu = (ux**2+uy**2+uz**2)**1.5 # Correspond à la racine pour calcule norme plus cube : ((d**2)**1/2)**3 ==> **1.5
             # Projection sur les axes de l'interraction gravitationnelle avec le vecteur u ==> G*(m1*m2)/d**2 *u ==> *cos(angle) ==> *u_axe/normeu (équivaut au vecteur unitaire normalisé)
             #Calcul de la force sur l'astre 1
-            astres[liste_astres[astre1]].fx += -G*(astres[liste_astres[astre1]].masse * astres[liste_astres[astre2]].masse)*ux/normeu
-            astres[liste_astres[astre1]].fy += -G*(astres[liste_astres[astre1]].masse * astres[liste_astres[astre2]].masse)*uy/normeu
-            astres[liste_astres[astre1]].fz += -G*(astres[liste_astres[astre1]].masse * astres[liste_astres[astre2]].masse)*uz/normeu
+            fx = -G*(astres[liste_astres[astre1]].masse * astres[liste_astres[astre2]].masse)*ux/normeu
+            fy = -G*(astres[liste_astres[astre1]].masse * astres[liste_astres[astre2]].masse)*uy/normeu
+            fz = -G*(astres[liste_astres[astre1]].masse * astres[liste_astres[astre2]].masse)*uz/normeu
             
-            #Calcul de la force sur l'astre 2
-            astres[liste_astres[astre2]].fx += -astres[liste_astres[astre1]].fx
-            astres[liste_astres[astre2]].fy += -astres[liste_astres[astre1]].fy
-            astres[liste_astres[astre2]].fz += -astres[liste_astres[astre1]].fz
+            # Calcul et ajout de la variation de vitesse à la vitesse de l'astre avec projection de la seconde loi de newton : F = ma avec a = d_v/d_t --> d_v = F*d_t/m
+            astres[liste_astres[astre1]].vx += fx*dt/astres[liste_astres[astre1]].masse
+            astres[liste_astres[astre1]].test.append(astres[liste_astres[astre1]].vx)
+            astres[liste_astres[astre1]].vy += fy*dt/astres[liste_astres[astre1]].masse
+            astres[liste_astres[astre1]].vz += fz*dt/astres[liste_astres[astre1]].masse
+            
+            # Actualisation de la position avec projection sur les axes : v = d/t -> d = v*t
+            astres[liste_astres[astre1]].x += astres[liste_astres[astre1]].vx*dt
+            astres[liste_astres[astre1]].y += astres[liste_astres[astre1]].vy*dt
+            astres[liste_astres[astre1]].z += astres[liste_astres[astre1]].vz*dt
+            
+            # Enregistrement position de l'astre
+            astres[liste_astres[astre1]].listpos[0].append(astres[liste_astres[astre1]].x)
+            astres[liste_astres[astre1]].listpos[1].append(astres[liste_astres[astre1]].y)
+            astres[liste_astres[astre1]].listpos[2].append(astres[liste_astres[astre1]].z)
             
             
+            ############## Application sur le 2e astre ################
             
+            # Calcul et ajout de la variation de vitesse à la vitesse de l'astre avec projection de la seconde loi de newton : F = ma avec a = d_v/d_t --> d_v = F*d_t/m
+            astres[liste_astres[astre2]].vx += -fx*dt/astres[liste_astres[astre2]].masse
+            astres[liste_astres[astre2]].vy += -fy*dt/astres[liste_astres[astre2]].masse
+            astres[liste_astres[astre2]].vz += -fz*dt/astres[liste_astres[astre2]].masse
             
+            # Actualisation de la position avec projection sur les axes : v = d/t -> d = v*t
+            astres[liste_astres[astre2]].x += astres[liste_astres[astre2]].vx*dt
+            astres[liste_astres[astre2]].y += astres[liste_astres[astre2]].vy*dt
+            astres[liste_astres[astre2]].z += astres[liste_astres[astre2]].vz*dt
             
-    # application forces :
-    for astre in ['Terre', 'Soleil']:
-        #test
-        # Calcul et ajout de la variation de vitesse à la vitesse de l'astre avec projection de la seconde loi de newton : F = ma avec a = d_v/d_t --> d_v = F*d_t/m
-        astres[liste_astres[astre]].vx += astres[liste_astres[astre]].fx*dt/astres[liste_astres[astre]].masse
-        astres[liste_astres[astre]].vy += astres[liste_astres[astre]].fy*dt/astres[liste_astres[astre]].masse
-        astres[liste_astres[astre]].vz += astres[liste_astres[astre]].fz*dt/astres[liste_astres[astre]].masse
-        
-        # Actualisation de la position avec projection sur les axes : v = d/t -> d = v*t
-        astres[liste_astres[astre]].x += astres[liste_astres[astre]].vx*dt
-        astres[liste_astres[astre]].y += astres[liste_astres[astre]].vy*dt
-        astres[liste_astres[astre]].z += astres[liste_astres[astre]].vz*dt
-        
-        # Enregistrement position de l'astre
-        astres[liste_astres[astre]].listpos[0].append(astres[liste_astres[astre]].x)
-        astres[liste_astres[astre]].listpos[1].append(astres[liste_astres[astre]].y)
-        astres[liste_astres[astre]].listpos[2].append(astres[liste_astres[astre]].z)
+            # Enregistrement position de l'astre
+            astres[liste_astres[astre2]].listpos[0].append(astres[liste_astres[astre2]].x)
+            astres[liste_astres[astre2]].listpos[1].append(astres[liste_astres[astre2]].y)
+            astres[liste_astres[astre2]].listpos[2].append(astres[liste_astres[astre2]].z)
 
-        astres[liste_astres[astre]].fx = 0.0
-        astres[liste_astres[astre]].fy = 0.0
-        astres[liste_astres[astre]].fz = 0.0
-    
-    
     t += dt
             
 """            

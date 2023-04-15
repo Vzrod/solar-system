@@ -23,6 +23,8 @@ t           = 0.0
 dt          = 1*daysec # every frame move this time
 xelist,yelist,zelist = [],[],[]
 xslist,yslist,zslist = [],[],[]
+
+test = []
 # start simulation
 while t<10*365*daysec:
     ################ earth #############
@@ -35,6 +37,7 @@ while t<10*365*daysec:
     
     # update quantities how is this calculated?  F = ma -> a = F/m
     xve += fx_e*dt/Me
+    test.append(xve)
     yve += fy_e*dt/Me
     zve += fz_e*dt/Me
     

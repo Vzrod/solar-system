@@ -4,6 +4,8 @@ Created on Sun Mar 19 13:40:19 2023
 @author: arthu
 """
 import csv
+import matplotlib.pyplot as plt
+from matplotlib import animation
 
 G = 6.67430e-11
 sec_jour = 24.0*60**2
@@ -11,10 +13,20 @@ t = 0.0
 dt = 1*sec_jour
 AU = 1.5E11
 
-# Probème : calcul déplacement a chaque exe et non uniquement les projections des forces
+# Fonctionne ? OK normallement liste force OK
 
-file = open('data2.csv')
+file = open('data4.csv')
 reader = csv.DictReader(file, delimiter=',')
+
+fig, ax = plt.subplots(figsize=(10,10))
+ax.set_aspect('equal')
+ax.grid()
+ax.axis('equal')
+ax.set_xlim(-10*AU,10*AU)
+ax.set_ylim(-10*AU,10*AU)
+
+
+
 
 class Astre:
     def __init__(self, data:dict):
@@ -26,6 +38,11 @@ class Astre:
         self.vx, self.vy, self.vz = 0.0, self.vitesse, 0.0      # Vitesse sur les axes
         self.listpos = [[],[],[]]                               # Liste des positions succésives de l'astre pour afficher l'orbite
         self.fx, self.fy, self.fz = 0.0, 0.0, 0.0
+        self.xdata, self.ydata = [], []
+        self.line, = ax.plot([],[],'-g', lw=1,c='blue')
+        self.point, = ax.plot([self.distance], [0], marker="o", markersize=4, markeredgecolor="blue", markerfacecolor="blue") 
+        self.text = ax.text(self.distance, 0, self.nom)
+
         
 data = [dict(row) for row in reader]
 
@@ -42,16 +59,13 @@ liste_astres = list(astres.keys())
 file.close()
 
 
+fox3 = []
+varv3 = []
+pos3 = []
 
-
-# chaque liste est indexé dans l'ordre : [astre]{x/y/z}:valeur
-
-
-while t<10*365*sec_jour:
+while t<20*365*sec_jour:
     for astre1 in range(len(liste_astres)-1):
         for astre2 in range(astre1+1, len(liste_astres)):
-            astre1 = 'Terre'
-            astre2 = 'Soleil'
             # Calcul du vecteur unitaire (u) entre l'astre 1 et l'astre 2
             # Calcul distance séparant les 2 astres sur chaque axe, vecteur astre1 --> astre2
             ux, uy, uz = astres[liste_astres[astre1]].x - astres[liste_astres[astre2]].x, astres[liste_astres[astre1]].y - astres[liste_astres[astre2]].y, astres[liste_astres[astre1]].z - astres[liste_astres[astre2]].z
@@ -73,17 +87,22 @@ while t<10*365*sec_jour:
             
             
     # application forces :
-    for astre in ['Terre', 'Soleil']:
+    for astre in range(len(liste_astres)):
+        if astres[liste_astres[astre]].nom=='Terre':fox3.append(astres[liste_astres[astre]].fx)
         #test
         # Calcul et ajout de la variation de vitesse à la vitesse de l'astre avec projection de la seconde loi de newton : F = ma avec a = d_v/d_t --> d_v = F*d_t/m
         astres[liste_astres[astre]].vx += astres[liste_astres[astre]].fx*dt/astres[liste_astres[astre]].masse
         astres[liste_astres[astre]].vy += astres[liste_astres[astre]].fy*dt/astres[liste_astres[astre]].masse
         astres[liste_astres[astre]].vz += astres[liste_astres[astre]].fz*dt/astres[liste_astres[astre]].masse
         
+        if astres[liste_astres[astre]].nom=='Terre':varv3.append(astres[liste_astres[astre]].vx)
+        
         # Actualisation de la position avec projection sur les axes : v = d/t -> d = v*t
         astres[liste_astres[astre]].x += astres[liste_astres[astre]].vx*dt
         astres[liste_astres[astre]].y += astres[liste_astres[astre]].vy*dt
         astres[liste_astres[astre]].z += astres[liste_astres[astre]].vz*dt
+        
+        if astres[liste_astres[astre]].nom=='Terre':pos3.append(astres[liste_astres[astre]].x)
         
         # Enregistrement position de l'astre
         astres[liste_astres[astre]].listpos[0].append(astres[liste_astres[astre]].x)
@@ -97,52 +116,29 @@ while t<10*365*sec_jour:
     
     t += dt
             
-"""            
-import matplotlib.pyplot as plt
-from matplotlib import animation
-
-fig, ax = plt.subplots(figsize=(10,10))
-ax.set_aspect('equal')
-ax.grid()
-
-line_e,     = ax.plot([],[],'-g',lw=1,c='blue')
-point_e,    = ax.plot([AU], [0], marker="o"
-                      , markersize=4
-                      , markeredgecolor="blue"
-                      , markerfacecolor="blue")
-text_e      = ax.text(AU,0,'Earth')
-
-point_s,    = ax.plot([0], [0], marker="o"
-                      , markersize=7
-                      , markeredgecolor="yellow"
-                      , markerfacecolor="yellow")
-text_s      = ax.text(0,0,'Sun')
-
-exdata,eydata = [],[]                   # earth track
-sxdata,sydata = [],[]                   # sun track
-
-print(len(xelist))
 
 def update(i):
-    exdata.append(xelist[i])
-    eydata.append(yelist[i])
+    tup_update = ()
+    for astre in range(len(liste_astres)):
+        astres[liste_astres[astre]].xdata.append(astres[liste_astres[astre]].listpos[0][i])
+        astres[liste_astres[astre]].ydata.append(astres[liste_astres[astre]].listpos[1][i])
     
-    line_e.set_data(exdata,eydata)
-    point_e.set_data(xelist[i],yelist[i])
-    text_e.set_position((xelist[i],yelist[i]))
-
-    point_s.set_data(xslist[i],yslist[i])
-    text_s.set_position((xslist[i],yslist[i]))
-    ax.axis('equal')
-    ax.set_xlim(-3*AU,3*AU)
-    ax.set_ylim(-3*AU,3*AU)
-
-    return line_e,point_s,point_e,text_e,text_s
+    for astre in range(len(liste_astres)):
+        astres[liste_astres[astre]].line.set_data(astres[liste_astres[astre]].xdata, astres[liste_astres[astre]].ydata)
+        
+        astres[liste_astres[astre]].point.set_data(astres[liste_astres[astre]].listpos[0][i], astres[liste_astres[astre]].listpos[1][i])
+        
+        astres[liste_astres[astre]].text.set_position((astres[liste_astres[astre]].listpos[0][i],astres[liste_astres[astre]].listpos[1][i]))
+        
+        tup_update += astres[liste_astres[astre]].line,
+        tup_update += astres[liste_astres[astre]].point,
+        tup_update += astres[liste_astres[astre]].text,
+    
+    return tup_update
 
 anim = animation.FuncAnimation(fig
                                 ,func=update
-                                ,frames=len(xelist)
+                                ,frames=len(astres['Terre'].listpos[0])
                                 ,interval=1
                                 ,blit=True)
 plt.show()            
-"""

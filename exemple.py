@@ -24,27 +24,41 @@ dt          = 1*daysec # every frame move this time
 xelist,yelist,zelist = [],[],[]
 xslist,yslist,zslist = [],[],[]
 
+
+
+norme2 = []
+
+fox2 = []
+
+varv2 = []
+
 test = []
+
+pos2 = []
 # start simulation
 while t<10*365*daysec:
     ################ earth #############
     # compute G force on earth
     rx,ry,rz = xe - xs, ye - ys, ze - zs
     modr3_e = (rx**2+ry**2+rz**2)**1.5
+    norme2.append(modr3_e)
     fx_e = -gravconst_e*rx/modr3_e
     fy_e = -gravconst_e*ry/modr3_e
     fz_e = -gravconst_e*rz/modr3_e
-    
+    fox2.append(fx_e)
     # update quantities how is this calculated?  F = ma -> a = F/m
     xve += fx_e*dt/Me
     test.append(xve)
     yve += fy_e*dt/Me
     zve += fz_e*dt/Me
+    varv2.append(xve)
     
     # update position
     xe += xve*dt
     ye += yve*dt 
     ze += zve*dt
+    print(xve*dt)
+    pos2.append(xe)
     
     # save the position in list
     xelist.append(xe)
@@ -56,6 +70,7 @@ while t<10*365*daysec:
     xvs += -fx_e*dt/Ms
     yvs += -fy_e*dt/Ms
     zvs += -fz_e*dt/Ms
+    print(xvs)
     
     # update position
     xs += xvs*dt
@@ -67,7 +82,7 @@ while t<10*365*daysec:
     
     # update dt
     t +=dt
-    
+
 
 import matplotlib.pyplot as plt
 from matplotlib import animation
@@ -116,4 +131,3 @@ anim = animation.FuncAnimation(fig
                                 ,interval=1
                                 ,blit=True)
 plt.show()
-

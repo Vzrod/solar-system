@@ -7,25 +7,22 @@ import csv
 import matplotlib.pyplot as plt
 from matplotlib import animation
 import matplotlib.colors as mcolors
-import numpy as np
 
 G = 6.67430e-11
 sec_jour = 24.0*60**2
 t = 0.0
-dt = 2*sec_jour
+dt = 1*sec_jour
 AU = 1.5E11
-
-# Fonctionne ? OK normallement liste force OK
 
 file = open('data4.csv')
 reader = csv.DictReader(file, delimiter=',')
 
-fig = plt.figure()
-ax = plt.axes(projection='3d')
-#ax.axis('off')
+fig, ax = plt.subplots(figsize=(10,10))
+ax.set_aspect('equal')
+ax.grid()
+ax.axis('equal')
 ax.set_xlim(-15*AU,15*AU)
 ax.set_ylim(-15*AU,15*AU)
-ax.set_zlim(-15*AU,15*AU)
 
 class Astre:
     def __init__(self, data:dict):
@@ -39,9 +36,9 @@ class Astre:
         self.color = data.get('couleur')
         self.fx, self.fy, self.fz = 0.0, 0.0, 0.0
         self.xdata, self.ydata = [], []
-        self.line, = ax.plot3D([],[],[],c=mcolors.CSS4_COLORS[self.color])
-        self.point = ax.scatter3D([self.distance], [0], [0], marker="o") 
-        self.text = ax.text(self.distance, 0, 0, self.nom)
+        self.line, = ax.plot([],[],'-g', lw=1,c=mcolors.CSS4_COLORS[self.color])
+        self.point, = ax.plot([self.distance], [0], marker="o", markersize=4, markeredgecolor=mcolors.CSS4_COLORS[self.color], markerfacecolor=mcolors.CSS4_COLORS[self.color]) 
+        self.text = ax.text(self.distance, 0, self.nom)
 
         
 data = [dict(row) for row in reader]
@@ -57,7 +54,6 @@ del(data)   # Supprime les données d'initialisation car stockées dans les
 liste_astres = list(astres.keys())
 
 file.close()
-
 
 fox3 = []
 varv3 = []
@@ -81,11 +77,7 @@ while t<100*365*sec_jour:
             astres[liste_astres[astre2]].fx += -astres[liste_astres[astre1]].fx
             astres[liste_astres[astre2]].fy += -astres[liste_astres[astre1]].fy
             astres[liste_astres[astre2]].fz += -astres[liste_astres[astre1]].fz
-            
-            
-            
-            
-            
+                  
     # application forces :
     for astre in range(len(liste_astres)):
         if astres[liste_astres[astre]].nom=='Terre':fox3.append(astres[liste_astres[astre]].fx)
@@ -113,13 +105,10 @@ while t<100*365*sec_jour:
         astres[liste_astres[astre]].fy = 0.0
         astres[liste_astres[astre]].fz = 0.0
     
-    
     t += dt
             
-
 def update(i):
     tup_update = ()
-    
     for astre in range(len(liste_astres)):
         astres[liste_astres[astre]].xdata.append(astres[liste_astres[astre]].listpos[0][i])
         astres[liste_astres[astre]].ydata.append(astres[liste_astres[astre]].listpos[1][i])
@@ -127,20 +116,15 @@ def update(i):
     for astre in range(len(liste_astres)):
         astres[liste_astres[astre]].line.set_data(astres[liste_astres[astre]].xdata, astres[liste_astres[astre]].ydata)
         
-
-        astres[liste_astres[astre]].point._offset3d = (astres[liste_astres[astre]].listpos[0][i], astres[liste_astres[astre]].listpos[1][i],astres[liste_astres[astre]].listpos[2][i])
+        astres[liste_astres[astre]].point.set_data(astres[liste_astres[astre]].listpos[0][i], astres[liste_astres[astre]].listpos[1][i])
         
         astres[liste_astres[astre]].text.set_position((astres[liste_astres[astre]].listpos[0][i],astres[liste_astres[astre]].listpos[1][i]))
         
         tup_update += astres[liste_astres[astre]].line,
         tup_update += astres[liste_astres[astre]].point,
         tup_update += astres[liste_astres[astre]].text,
-    
+        
     return tup_update
 
-anim = animation.FuncAnimation(fig
-                                ,func=update
-                                ,frames=len(astres['Terre'].listpos[0])
-                                ,interval=1
-                                ,blit=True)
-plt.show()            
+anim = animation.FuncAnimation(fig,func=update,frames=len(astres['Terre'].listpos[0]),interval=1,blit=True)
+plt.show()

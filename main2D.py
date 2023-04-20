@@ -55,10 +55,6 @@ liste_astres = list(astres.keys())
 
 file.close()
 
-fox3 = []
-varv3 = []
-pos3 = []
-
 while t<100*365*sec_jour:
     for astre1 in range(len(liste_astres)-1):
         for astre2 in range(astre1+1, len(liste_astres)):
@@ -80,21 +76,16 @@ while t<100*365*sec_jour:
                   
     # application forces :
     for astre in range(len(liste_astres)):
-        if astres[liste_astres[astre]].nom=='Terre':fox3.append(astres[liste_astres[astre]].fx)
         #test
         # Calcul et ajout de la variation de vitesse à la vitesse de l'astre avec projection de la seconde loi de newton : F = ma avec a = d_v/d_t --> d_v = F*d_t/m
         astres[liste_astres[astre]].vx += astres[liste_astres[astre]].fx*dt/astres[liste_astres[astre]].masse
         astres[liste_astres[astre]].vy += astres[liste_astres[astre]].fy*dt/astres[liste_astres[astre]].masse
         astres[liste_astres[astre]].vz += astres[liste_astres[astre]].fz*dt/astres[liste_astres[astre]].masse
         
-        if astres[liste_astres[astre]].nom=='Terre':varv3.append(astres[liste_astres[astre]].vx)
-        
         # Actualisation de la position avec projection sur les axes : v = d/t -> d = v*t
         astres[liste_astres[astre]].x += astres[liste_astres[astre]].vx*dt
         astres[liste_astres[astre]].y += astres[liste_astres[astre]].vy*dt
         astres[liste_astres[astre]].z += astres[liste_astres[astre]].vz*dt
-        
-        if astres[liste_astres[astre]].nom=='Terre':pos3.append(astres[liste_astres[astre]].x)
         
         # Enregistrement position de l'astre
         astres[liste_astres[astre]].listpos[0].append(astres[liste_astres[astre]].x)

@@ -13,7 +13,7 @@ sec_jour = 24.0*60**2
 t = 0.0
 dt = 1*sec_jour
 AU = 1.5E11
-
+ feUR
 file = open('data4.csv')
 reader = csv.DictReader(file, delimiter=',')
 

@@ -13,10 +13,8 @@ class client():
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.socket:
             self.socket.connect((HOST, PORT))
             print('Connecté au serveur')
-            socket.sendall(self.pseudo.endode('utf-8'))
-        
-        
-        
-        
-    
-    
+            self.socket.send(('<PSEUDO>'+self.pseudo).encode('utf-8'))
+            while True:
+                data = self.socket.recv(1024)
+                print(data)
+            

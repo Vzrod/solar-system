@@ -5,8 +5,9 @@ Created on Fri Apr 21 09:41:37 2023
 @author: aclot
 """
 
+import random as rnd
 import socket
-
+from demineur import plateau
 
 class server():
     
@@ -31,14 +32,12 @@ class server():
                 print(self.cons_socket)
                 if len(self.cons_socket) == 2:
                     for client in self.cons_socket:
-                        try : client.send(b'RPC')
+                        try : client.send(b'')
                         except socket.error: self.cons_socket.remove(client)
                 print(len(self.cons_socket))
         print('Debut game')
-                    
-            
-    def rpc(self, clients: list, message):
-        for client in clients:
-            client.send(message)
-
+        
+    def game(self):
+        
+                   
 

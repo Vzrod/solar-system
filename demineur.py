@@ -4,7 +4,6 @@ Created on Thu Apr 20 20:05:12 2023
 
 @author: arthu
 """
-from sys import getsizeof
 import random as rnd
 
 class plateau():
@@ -56,13 +55,3 @@ class plateau():
                     print(' X |', end='')
             print('')
 
-
-
-"""
-def gen_liste(taille: tuple):
-    liste = [[[[0], [0], [0], [0]] for _ in range(taille[0])] for _ in range(taille[1])]
-    return liste
-
-print('Dico', getsizeof(gen_dico((100,100))))
-print('Liste', getsizeof(gen_liste((100,100))))
-"""

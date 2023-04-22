@@ -8,9 +8,20 @@ Created on Fri Apr 21 09:41:37 2023
 import socket
 
 
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind((socket.gethostname(), 80))
-
-serversocket.listen(5)
+class server():
+    
+    def __init__(self):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as self.serversocket:
+            self.serversocket.bind((socket.gethostname(), 2500))
+            self.serversocket.listen(5)
+            self.start()
+            
+    def start(self):
+        
+        
+        
+        clientsocket, addr = self.serversocket.accept()
+        with clientsocket:
+            
 
 

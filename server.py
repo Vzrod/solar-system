@@ -8,10 +8,12 @@ Created on Fri Apr 21 09:41:37 2023
 import random as rnd
 import socket
 from demineur import plateau
+from threading import Thread
 
-class server():
+class threadedServer(Thread):
     
     def __init__(self):
+        Thread.__init__(self)
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.serversocket.bind((socket.gethostname(), 2500))
         print(socket.gethostname())
@@ -36,4 +38,13 @@ class server():
                         except socket.error: self.cons_socket.remove(client)
                 print(len(self.cons_socket))
         print('Debut game')
+        self.start_game()
+        
+    def start_game(self):
+        for client in self.cons_socket:
+            try : client.send(b'<GAME_INIT>')
+            except socket.error: 
+                client.send(b'<SERVER_ERROR>')
+                self.lobby()
+                break
     

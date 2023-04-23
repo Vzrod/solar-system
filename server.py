@@ -32,12 +32,8 @@ class server():
                 print(self.cons_socket)
                 if len(self.cons_socket) == 2:
                     for client in self.cons_socket:
-                        try : client.send(b'')
+                        try : client.send(b'bonsoir')
                         except socket.error: self.cons_socket.remove(client)
                 print(len(self.cons_socket))
         print('Debut game')
-        
-    def game(self):
-        
-                   
-
+    

@@ -83,7 +83,7 @@ class game(tk.Frame):
         
         print(coord)
         button = self.grid_frame.grid_slaves(row=coord[0], column=coord[1])[0]
-        if button.cget('text') != 'F':
+        if button.cget('text') == '':
             self.controller.client.client_update(coord)
             self.count.configure(bg="red")
         
@@ -104,6 +104,14 @@ class game(tk.Frame):
         
     def msgbox(self):
         tk.messagebox.showinfo("Démineur",  "Game started!")
+        
+    def game_update(self, coord):
+        button = self.grid_frame.grid_slaves(row=coord[0], column=coord[1])[0]
+        if coord[2] == 0:
+            button.destroy()
+        else:
+            button.configure(text = str(coord[2]))
+            
 
 
 """

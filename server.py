@@ -3,6 +3,9 @@
 Created on Fri Apr 21 09:41:37 2023
 
 @author: aclot
+
+(b'<GAME_TURN>,350,(1.2.4),(2.3.6)').decode('utf-8').split(',')
+
 """
 
 import random as rnd
@@ -45,6 +48,10 @@ class threadedServer(Thread):
         
     def start_game(self):
         self.playerstime = {client:420 for client in self.cons_socket}
+        self.game = plateau()
+        self.game.init_plat(2)
+        self.game.log_affichage()
+        print()
         time.sleep(5)
         for client in self.cons_socket:
             try : client.send(b'<GAME_INIT>')
@@ -58,8 +65,19 @@ class threadedServer(Thread):
                 client.send(b'<GAME_TURN>')
                 t_start = time.time()
                 data = client.recv(1024)
-                print(eval((data).decode('utf-8')))
+                d = (data).decode('utf-8')
+                plate_update = self.game.coup(eval(d))
+                self.game.affichage()
+                print()
                 self.playerstime[client] = self.playerstime[client] - round(time.time() - t_start, 2)
+                com = b'<CLIENT_UPDATE>'
+                for up in plate_update:
+                    com+=b','+up.encode('utf-8')
+                for client in self.cons_socket:
+                    client.send(com)
+                    
+                
+                
                 
                 """
                     for c in self.cons_socket:

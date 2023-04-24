@@ -20,9 +20,10 @@ class threadedClient(Thread):
         self.pseudo = pseudo
         self.host = host
         self.port = port
-        self.game_state = [False, b'<GAME_INIT>', self.start_game]
-        self.turn_cond = [False, b'<GAME_TURN>', lambda:0]
-        self.dic = {self.game_state[1]:self.game_state, self.turn_cond[1]:self.turn_cond}
+        self.game_state = [False, b'GAME_INIT', self.start_game]
+        self.turn_cond = [False, b'GAME_TURN', lambda data:0]
+        self.listen_update = [False, b'CLIENT_UPDATE', self.gui_update]
+        self.dic = {self.game_state[1]:self.game_state, self.turn_cond[1]:self.turn_cond, self.listen_update[1]:self.listen_update}
         
         
         tfen = Thread(target = self.affichage_fen, args=(2,))
@@ -37,11 +38,11 @@ class threadedClient(Thread):
         
     def client_update(self, coord):
         print("client",coord)
-        print(self.game_state[0], self.dic[b'<GAME_TURN>'][0])
-        if self.game_state[0] == True and self.dic[b'<GAME_TURN>'][0] == True:
+        print(self.game_state[0], self.dic[b'GAME_TURN'][0])
+        if self.game_state[0] == True and self.dic[b'GAME_TURN'][0] == True:
             self.socket.send(str((coord)).encode('utf-8'))
-            self.dic[b'<GAME_TURN>'][0] = False
-            u = Thread(target = self.listen, args=(self.dic[b'<GAME_TURN>'],))
+            self.dic[b'GAME_TURN'][0] = False
+            u = Thread(target = self.listen, args=(self.dic[b'GAME_TURN'],))
             u.start()
     
     
@@ -49,26 +50,40 @@ class threadedClient(Thread):
         print('listen', cond[0])
         while cond[0] == False:
             try:
-                print('att serv')
+                print('Att serv :', cond[1])
                 data = self.socket.recv(1024)
-                if data == cond[1]:
+                if data[data.find(b'<')+1 : data.find(b'>')] == cond[1]:
                     print('data', data, ' == cond[1]', cond[1])
-                    cond[2]()
+                    cond[2](data)
                     self.dic[cond[1]][0] = True
-                    print('ligne 57 :', self.dic[cond[1]][0])
+                    print(cond[1], 'Recu, ligne 57 :', self.dic[cond[1]][0])
             except socket.timeout: pass
                 
-    #def client_update(self):
+    def gui_update(self, data):
+        undata = data.decode('utf-8').split(',')[1:]
+        for coord in undata:
+            self.fen.frames['game'].game_update(eval(coord.replace('.',',')))
+        v = Thread(target = self.listen, args=(self.dic[b'CLIENT_UPDATE'],))
+        v.start()
+            
+        
+        
+        
+        self.dic[b'CLIENT_UPDATE'][0] = False
+        v = Thread(target = self.listen, args=(self.dic[b'CLIENT_UPDATE'],))
+        v.start()
     
     def start_listen(self, cond):
         t = Thread(target = self.listen, args=(cond,))
         t.start()
         
-    def start_game(self):
+    def start_game(self, data):
          print('Game started')
          self.fen.frames['game'].msgbox()
-         u = Thread(target = self.listen, args=(self.dic[b'<GAME_TURN>'],))
+         u = Thread(target = self.listen, args=(self.dic[b'GAME_TURN'],))
          u.start()
+         v = Thread(target = self.listen, args=(self.dic[b'CLIENT_UPDATE'],))
+         v.start()
          
         
     def affichage_fen(self, diff):

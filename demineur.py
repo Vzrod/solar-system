@@ -74,9 +74,11 @@ class plateau():
             print('')
             
     def coup(self, coord: tuple):
+        case_updated = []
         if (coord in self.dico) and (self.dico[coord][0] != -2) and (self.dico[coord][1] == 0):
             if self.dico[coord][2] == 0:
                 self.dico[coord][1] = -1
+                case_updated.append(f'({coord[0]}.{coord[1]}.{self.dico[coord][3]})')
                 if self.dico[coord][3] == 0:
                     buffer = [coord]
                     while len(buffer)>0:
@@ -87,13 +89,14 @@ class plateau():
                                 if self.dico[((i//3)+coinX, (i%3)+coinY)][1] == 0: #Case affiché ?
                                     if self.dico[((i//3)+coinX, (i%3)+coinY)][0] != -2: #Drapeau sur la case ?
                                         self.dico[((i//3)+coinX, (i%3)+coinY)][1] = -1
+                                        case_updated.append(f'({(i//3)+coinX}.{(i%3)+coinY}.{self.dico[((i//3)+coinX, (i%3)+coinY)][3]})')
                                         if self.dico[((i//3)+coinX, (i%3)+coinY)][3] == 0:
                                             buffer.append(((i//3)+coinX, (i%3)+coinY))
                         buffer.remove(buffer[0])
                                     
             else: return 'Lost' 
         else: return False
-        return True
+        return case_updated
                     
     def flag(self, coord:tuple):
         if (coord in self.dico):

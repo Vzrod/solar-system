@@ -59,7 +59,7 @@ class game(tk.Frame):
         
         self.count_frame = tk.Frame(self, padx=10, pady=30)
         self.count_frame.grid(row=0, column=0, sticky="nsew")
-        self.count = tk.Label(self.count_frame, text="Timer : ", font=("Helvetica", "20"), bg="yellow", fg="blue")
+        self.count = tk.Label(self.count_frame, text="Timer : ", font=("Helvetica", "20"), fg="blue")
         self.count.pack()
         
         
@@ -85,6 +85,7 @@ class game(tk.Frame):
         button = self.grid_frame.grid_slaves(row=coord[0], column=coord[1])[0]
         if button.cget('text') != 'F':
             self.controller.client.client_update(coord)
+            self.count.configure(bg="red")
         
     def right_clicked(self, coord):
         print(coord)
@@ -99,7 +100,7 @@ class game(tk.Frame):
         
     def countdown(self, temps):
         print('countdown')
-        self.count.configure(text="Timer : {}".format(temps))
+        self.count.configure(text="Timer : {}".format(temps), bg="yellow")
         
     def msgbox(self):
         tk.messagebox.showinfo("Démineur",  "Game started!")

@@ -10,6 +10,7 @@ from demineur import plateau
 from threading import Thread
 from gui import *
 import tkinter as tk
+import time
 
                      
             
@@ -28,10 +29,8 @@ class threadedClient(Thread):
         tfen.start()
 
     def conn(self):
-        print('conn')
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.connect((self.host, self.port))
-        print('Connecté au serveur')
         self.start_listen(self.game_state)
         self.socket.send(('<PSEUDO>'+self.pseudo).encode('utf-8'))
         
@@ -40,20 +39,23 @@ class threadedClient(Thread):
         print("client",coord)
         print(self.game_state[0], self.dic[b'<GAME_TURN>'][0])
         if self.game_state[0] == True and self.dic[b'<GAME_TURN>'][0] == True:
-            self.socket.send((coord).encode('utf-8'))
+            self.socket.send(str((coord)).encode('utf-8'))
             self.dic[b'<GAME_TURN>'][0] = False
+            u = Thread(target = self.listen, args=(self.dic[b'<GAME_TURN>'],))
+            u.start()
     
     
     def listen(self, cond: list):
-        print(cond)
+        print('listen', cond[0])
         while cond[0] == False:
             try:
                 print('att serv')
                 data = self.socket.recv(1024)
                 if data == cond[1]:
-                    print('data == cond[1]')
+                    print('data', data, ' == cond[1]', cond[1])
                     cond[2]()
                     self.dic[cond[1]][0] = True
+                    print('ligne 57 :', self.dic[cond[1]][0])
             except socket.timeout: pass
                 
     #def client_update(self):
@@ -65,8 +67,9 @@ class threadedClient(Thread):
     def start_game(self):
          print('Game started')
          self.fen.frames['game'].msgbox()
-         while True:
-             self.listen(self.dic[b'<GAME_TURN>'])
+         u = Thread(target = self.listen, args=(self.dic[b'<GAME_TURN>'],))
+         u.start()
+         
         
     def affichage_fen(self, diff):
         self.fen = gui(diff, self)

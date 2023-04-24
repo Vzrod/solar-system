@@ -33,7 +33,6 @@ class threadedServer(Thread):
                 self.players[addr] = data[8:]
                 self.players[clientsocket] = data[8:]
                 self.cons_socket.append(clientsocket)
-                print(self.cons_socket)
                 if len(self.cons_socket) == 2:
                     for client in self.cons_socket:
                         try : client.send(b'bonsoir')
@@ -59,14 +58,14 @@ class threadedServer(Thread):
                 client.send(b'<GAME_TURN>')
                 t_start = time.time()
                 data = client.recv(1024)
-                print(data)
+                print(eval((data).decode('utf-8')))
                 self.playerstime[client] = self.playerstime[client] - round(time.time() - t_start, 2)
                 
                 """
                     for c in self.cons_socket:
                         c.send(('<END_GAME>'+self.players[client]).encode('utf-8')) #Nom Perdant
                 """
-                    
+s = threadedServer()                    
                     
                 
         

@@ -96,7 +96,7 @@ class game(tk.Frame):
         
         if button.cget('text') == 'F':
             button.configure(text='', fg='black')
-        else : button.configure(text='F', fg='red')
+        elif button.cget('text') == '': button.configure(text='F', fg='red')
         
     def countdown(self, temps):
         print('countdown')
@@ -111,6 +111,9 @@ class game(tk.Frame):
             button.destroy()
         else:
             button.configure(text = str(coord[2]))
+            
+    def losemsg(self, pseudo):
+        tk.messagebox.showinfo("Démineur", f'Le joueur {pseudo} a perdu')
             
 
 

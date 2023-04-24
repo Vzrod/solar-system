@@ -25,6 +25,7 @@ class threadedServer(Thread):
         self.lobby()
             
     def lobby(self):
+        self.game_state = True
         self.cons_socket = []
         self.players = {}
         while len(self.cons_socket) != 2:
@@ -54,19 +55,27 @@ class threadedServer(Thread):
         print()
         time.sleep(5)
         for client in self.cons_socket:
-            try : client.send(b'<GAME_INIT>')
+            try : 
+                client.send(b'<GAME_INIT>')
+                print('Send GAME INIT')
             except socket.error: 
                 client.send(b'<SERVER_ERROR>')
                 self.lobby()
                 break
-        while True:
+        while self.game_state:
             for client in self.cons_socket:
+                cur_player = self.players[client]
                 self.reponse = False
                 client.send(b'<GAME_TURN>')
                 t_start = time.time()
                 data = client.recv(1024)
                 d = (data).decode('utf-8')
                 plate_update = self.game.coup(eval(d))
+                if plate_update == 'Lost':
+                    for client in self.cons_socket:
+                        client.send(b'<CLIENT_LOST>'+cur_player.encode('utf-8'))
+                    self.game_state = False
+                    break
                 self.game.affichage()
                 print()
                 self.playerstime[client] = self.playerstime[client] - round(time.time() - t_start, 2)

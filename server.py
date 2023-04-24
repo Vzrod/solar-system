@@ -9,6 +9,7 @@ import random as rnd
 import socket
 from demineur import plateau
 from threading import Thread
+import time
 
 class threadedServer(Thread):
     
@@ -30,6 +31,7 @@ class threadedServer(Thread):
             print('receive', data)
             if data[:8] == '<PSEUDO>':
                 self.players[addr] = data[8:]
+                self.players[clientsocket] = data[8:]
                 self.cons_socket.append(clientsocket)
                 print(self.cons_socket)
                 if len(self.cons_socket) == 2:
@@ -40,11 +42,33 @@ class threadedServer(Thread):
         print('Debut game')
         self.start_game()
         
+        
+        
     def start_game(self):
+        self.playerstime = {client:420 for client in self.cons_socket}
+        time.sleep(5)
         for client in self.cons_socket:
             try : client.send(b'<GAME_INIT>')
             except socket.error: 
                 client.send(b'<SERVER_ERROR>')
                 self.lobby()
                 break
+        while True:
+            for client in self.cons_socket:
+                self.reponse = False
+                client.send(b'<GAME_TURN>')
+                t_start = time.time()
+                data = client.recv(1024)
+                print(data)
+                self.playerstime[client] = self.playerstime[client] - round(time.time() - t_start, 2)
+                
+                """
+                    for c in self.cons_socket:
+                        c.send(('<END_GAME>'+self.players[client]).encode('utf-8')) #Nom Perdant
+                """
+                    
+                    
+                
+        
+        
     

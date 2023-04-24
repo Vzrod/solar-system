@@ -19,7 +19,12 @@ class threadedServer(Thread):
     def __init__(self):
         Thread.__init__(self)
         self.serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.serversocket.bind((socket.gethostname(), 2500))
+        host = ''
+        port = 2500
+        domain = 'demineur.ddns.net'
+        self.serversocket.bind((host, port))
+        ip_address = socket.gethostbyname(domain)
+        print(ip_address)
         print(socket.gethostname())
         self.serversocket.listen(5)
         self.lobby()

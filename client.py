@@ -6,7 +6,7 @@ Created on Sat Apr 22 17:07:31 2023
 """
 
 import socket
-from demineur import plateau
+#from demineur import plateau
 from threading import Thread
 from gui import *
 import tkinter as tk
@@ -95,5 +95,5 @@ class threadedClient(Thread):
         self.fen = gui(diff, self)
         self.fen.mainloop()
         
-client = threadedClient('DESKTOP-B717DA8', 2500, 'Vzrod')
+client = threadedClient('demineur.ddns.net', 2500, 'Vzrod')
 

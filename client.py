@@ -3,13 +3,19 @@
 Created on Sat Apr 22 17:07:31 2023
 
 @author: arthu
+
+pyinstyalle client.py --onefile --windowed --collect-submodules solar-system
+
+
+!!!!!!!!!!!!!!!! close file when window close
+
 """
 
 import socket
-#from demineur import plateau
 from threading import Thread
 from gui import *
 import tkinter as tk
+import tkinter.messagebox
 import time
 
                      

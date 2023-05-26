@@ -6,6 +6,7 @@ Created on Sun Apr 23 10:16:43 2023
 """
 
 import tkinter as tk
+import tkinter.messagebox
 
 class gui(tk.Tk):
     def __init__(self, diff, client):

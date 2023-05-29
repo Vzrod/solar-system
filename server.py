@@ -36,6 +36,7 @@ class threadedServer(Thread):
         self.players = {}
         while len(self.cons_socket) != 2:
             print('Att co')
+            self.serversocket.settimeout(None)
             clientsocket, addr = self.serversocket.accept()
             data = clientsocket.recv(1024).decode('utf-8')
             print('receive', data)
@@ -56,7 +57,7 @@ class threadedServer(Thread):
     def start_game(self):
         self.game = plateau()
         self.game.init_plat(0)
-        self.timeplayer = 5.1
+        self.timeplayer = 10.1
         self.game.log_affichage()
         self.data_queue = queue.Queue()
         print()
@@ -105,8 +106,8 @@ class threadedServer(Thread):
                     for client in self.cons_socket:
                         client.send(com)
                         
-        #print("New server Game started")
-        #self.lobby()
+        print("New server Game started")
+        self.lobby()
             
                     
             

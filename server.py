@@ -53,12 +53,10 @@ class threadedServer(Thread):
         
         
     def start_game(self):
-        self.playerstime = {client:420 for client in self.cons_socket}
         self.game = plateau()
-        self.game.init_plat(2)
+        self.game.init_plat(0)
         self.game.log_affichage()
         print()
-        time.sleep(5)
         for client in self.cons_socket:
             try : 
                 client.send(b'<GAME_INIT>')
@@ -67,6 +65,7 @@ class threadedServer(Thread):
                 client.send(b'<SERVER_ERROR>')
                 self.lobby()
                 break
+        time.sleep(1)
         while self.game_state:
             for client in self.cons_socket:
                 cur_player = self.players[client]
@@ -83,7 +82,6 @@ class threadedServer(Thread):
                     break
                 self.game.affichage()
                 print()
-                self.playerstime[client] = self.playerstime[client] - round(time.time() - t_start, 2)
                 com = b'<CLIENT_UPDATE>'
                 for up in plate_update:
                     com+=b','+up.encode('utf-8')

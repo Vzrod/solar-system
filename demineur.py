@@ -17,6 +17,7 @@ class plateau():
         self.gen_dico()
         self.gen_mines()
         self.aff_nb()
+        self.liste_cases = [key for key in self.dico.keys() if self.dico[key][2]!=-1] #à decouvrir
     
     def gen_dico(self):
         for i in range(self.difficultes[self.diff][0][0]):
@@ -79,6 +80,7 @@ class plateau():
             if self.dico[coord][2] == 0:
                 self.dico[coord][1] = -1
                 case_updated.append(f'({coord[0]}.{coord[1]}.{self.dico[coord][3]})')
+                self.liste_cases.remove((coord[0], coord[1]))                
                 if self.dico[coord][3] == 0:
                     buffer = [coord]
                     while len(buffer)>0:
@@ -90,13 +92,16 @@ class plateau():
                                     if self.dico[((i//3)+coinX, (i%3)+coinY)][0] != -2: #Drapeau sur la case ?
                                         self.dico[((i//3)+coinX, (i%3)+coinY)][1] = -1
                                         case_updated.append(f'({(i//3)+coinX}.{(i%3)+coinY}.{self.dico[((i//3)+coinX, (i%3)+coinY)][3]})')
+                                        self.liste_cases.remove(((i//3)+coinX, (i%3)+coinY))
                                         if self.dico[((i//3)+coinX, (i%3)+coinY)][3] == 0:
                                             buffer.append(((i//3)+coinX, (i%3)+coinY))
                         buffer.remove(buffer[0])
                                     
-            else: return 'Lost' 
+            else: return (case_updated, 'Lost') 
         else: return False
-        return case_updated
+        if len(self.liste_cases) == 0:
+            return (case_updated, 'Equality')
+        return (case_updated,0)
                     
     def flag(self, coord:tuple):
         if (coord in self.dico):

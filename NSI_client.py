@@ -35,7 +35,8 @@ class threadedClient(Thread):
         self.listen_update = [False, b'CLIENT_UPDATE', self.gui_update]
         self.client_lost = [False, b'CLIENT_LOST', self.lose_game]
         self.timerup = [False, b'TIMER', self.update_timer]
-        self.dic = {self.game_init[1]:self.game_init, self.turn_cond[1]:self.turn_cond, self.listen_update[1]:self.listen_update, self.client_lost[1]:self.client_lost, self.timerup[1]:self.timerup}
+        self.equality = [False, b'CLIENT_EQUALITY', self.client_equality]
+        self.dic = {self.game_init[1]:self.game_init, self.turn_cond[1]:self.turn_cond, self.listen_update[1]:self.listen_update, self.client_lost[1]:self.client_lost, self.timerup[1]:self.timerup, self.equality[1]:self.equality}
         
         
     def init_conn(self, host, port, pseudo):
@@ -56,25 +57,27 @@ class threadedClient(Thread):
         tconn.start()
         
     def close_conn(self):
-        self.socket.close()
+        print("Closing client socket")
+        self.clientsocket.close()
+        print(self.clientsocket)
         
         
     def conn(self):
         """Démarre la connction avec le serveur et transmet le pseudo"""
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.settimeout(5) #Timeout de 5s
+        self.clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.clientsocket.settimeout(5) #Timeout de 5s
         print("Socket crée")
         try:
             print("Démarrage connection socket")
-            self.socket.connect((self.host, self.port))
+            self.clientsocket.connect((self.host, self.port))
             self.start_listen()
-            self.socket.send(('<PSEUDO>'+self.pseudo).encode('utf-8'))
+            self.clientsocket.send(('<PSEUDO>'+self.pseudo).encode('utf-8'))
             self.fen.att_joueur()
         except socket.error as msg:
             print(f'Socket error : {msg}')
         except ConnectionRefusedError:
             print("Server fermé")
-            self.socket.close()
+            self.clientsocket.close()
         
         
     def client_update(self, coord):
@@ -82,7 +85,7 @@ class threadedClient(Thread):
         print("client", coord)
         print(self.game_init[0], self.dic[b'GAME_TURN'][0])
         if self.game_init[0] == True and self.dic[b'GAME_TURN'][0] == True:
-            self.socket.send(str((coord)).encode('utf-8'))
+            self.clientsocket.send(str((coord)).encode('utf-8'))
             self.dic[b'GAME_TURN'][0] = False # Termine le tour du client
     
     
@@ -91,9 +94,10 @@ class threadedClient(Thread):
         """Fonct lancée en thread pour écouter msg du serv et call fonct correspondante"""
         #print('Client sur écoute')
         
-        self.socket.settimeout(None)
+        
         try:
-            data = self.socket.recv(2048)
+            self.clientsocket.settimeout(None)
+            data = self.clientsocket.recv(2048)
             #print(data)
             header = data[data.find(b'<')+1 : data.find(b'>')]
             if header in self.dic:
@@ -102,6 +106,7 @@ class threadedClient(Thread):
                 self.dic[header][0] = True
             else : pass
         except socket.timeout: pass
+        except : pass
         finally:
             self.start_listen()
            
@@ -116,7 +121,7 @@ class threadedClient(Thread):
         """Communique au GUI les cases à modifier"""
         self.fen.is_turn = False
         undata = data.decode('utf-8').split(',')[1:]
-        self.fen.gui_timer_up(5.0)
+        self.fen.gui_timer_up(10.0)
         for coord in undata:
             self.fen.update(eval(coord.replace('.',',')))
     
@@ -136,9 +141,16 @@ class threadedClient(Thread):
         print('game lost')
         pseudo = data[data.find(b'>')+1:]
         print(pseudo)
-        self.socket.close()
-        del self.socket
+        self.clientsocket.close()
+        del self.clientsocket
         self.fen.losemsg(pseudo.decode('utf-8'))
+        
+        
+    def client_equality(self, data):
+        print('game equality')
+        self.clientsocket.close()
+        del self.clientsocket
+        self.fen.equalitymsg()
         
 
     def update_timer(self, data):

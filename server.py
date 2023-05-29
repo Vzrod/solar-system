@@ -51,9 +51,10 @@ class threadedServer(Thread):
                 print(len(self.cons_socket))
         print('Debut game')
         self.start_game()
+
         
-        
-        
+
+
     def start_game(self):
         self.game = plateau()
         self.game.init_plat(0)
@@ -93,25 +94,37 @@ class threadedServer(Thread):
                 else:
                     d = (self.data).decode('utf-8')
                     plate_update = self.game.coup(eval(d))
-                    if plate_update == 'Lost':
-                        for client in self.cons_socket:
-                            client.send(b'<CLIENT_LOST>'+cur_player.encode('utf-8'))
-                        self.game_state = False
-                        break
+                    
                     self.game.affichage()
                     print()
                     com = b'<CLIENT_UPDATE>'
-                    for up in plate_update:
+                    for up in plate_update[0]:
                         com+=b','+up.encode('utf-8')
                     for client in self.cons_socket:
                         client.send(com)
                         
+                        
+                        
+                        
+                        
+                    if plate_update[1] == 'Equality':
+                        for client in self.cons_socket:
+                            client.send(b'<CLIENT_EQUALITY>')
+                            print('client equality')
+                        self.game_state = False
+                        break
+                    
+                    if plate_update[1] == 'Lost':
+                        for client in self.cons_socket:
+                            client.send(b'<CLIENT_LOST>'+cur_player.encode('utf-8'))
+                        self.game_state = False
+                        break
+                        
         print("New server Game started")
         self.lobby()
             
-                    
-            
-                
+
+
     def listening(self, client):
         try:
             self.serversocket.settimeout(float(self.timeplayer)+0.1)

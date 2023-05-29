@@ -20,7 +20,7 @@ class GUI(tk.Tk):
         
         self.geometry("520x570")
         self.title("Partie de démineur")
-        
+        self.resizable(False, False)
         
         self.is_turn = False
         
@@ -82,9 +82,9 @@ class GUI(tk.Tk):
         grid_sources=event.widget.grid_info()
         if self.game_state==0:
             if self.dico[grid_sources["row"], grid_sources["column"]]['text'] == '':
-                self.dico[grid_sources["row"], grid_sources["column"]].configure(text=chr(9872),fg="black")
+                self.dico[grid_sources["row"], grid_sources["column"]].configure(text=chr(9872),fg="black",bg='#f0f0f0' )
             elif self.dico[grid_sources["row"], grid_sources["column"]]['text'] == chr(9872):
-                self.dico[grid_sources["row"], grid_sources["column"]].configure(text="")
+                self.dico[grid_sources["row"], grid_sources["column"]].configure(text="", bg='#f0f0f0')
     
     def dico_button(self):
         for i in range(self.taille[0]):
@@ -199,9 +199,15 @@ class GUI(tk.Tk):
         self.retry_button=tk.Button(self.plage,text="Retry",command=self.restart,height=2,width=5)
         self.retry_button.grid(row=self.taille[0]+5,column=int(self.taille[1]/2))
 
-    
+    def equalitymsg(self):
+        
+        self.timer_label.destroy()
 
-
+        self.lost_label=tk.Label(self,text='Equality, click on the button retry in order to restart the game.',fg="black")
+        self.lost_label.grid(row=self.taille[0]+1)
+        
+        self.retry_button=tk.Button(self.plage,text="Retry",command=self.restart,height=2,width=5)
+        self.retry_button.grid(row=self.taille[0]+5,column=int(self.taille[1]/2))
 
 
 

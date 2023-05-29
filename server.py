@@ -13,6 +13,7 @@ import socket
 from demineur import plateau
 from threading import Thread
 import time
+import queue
 
 class threadedServer(Thread):
     
@@ -55,7 +56,9 @@ class threadedServer(Thread):
     def start_game(self):
         self.game = plateau()
         self.game.init_plat(0)
+        self.timeplayer = 5.1
         self.game.log_affichage()
+        self.data_queue = queue.Queue()
         print()
         for client in self.cons_socket:
             try : 
@@ -65,36 +68,80 @@ class threadedServer(Thread):
                 client.send(b'<SERVER_ERROR>')
                 self.lobby()
                 break
-        time.sleep(1)
+        time.sleep(1) #Prévenir le temps de chargement des clients / A changer :==> Attendre rep pour launch mais flemme
         while self.game_state:
             for client in self.cons_socket:
                 cur_player = self.players[client]
                 self.reponse = False
                 client.send(b'<GAME_TURN>')
-                t_start = time.time()
-                data = client.recv(1024)
-                d = (data).decode('utf-8')
-                plate_update = self.game.coup(eval(d))
-                if plate_update == 'Lost':
+                
+                l1_thread = Thread(target=self.listening, args=(client,))
+                l1_thread.start()                
+                
+                l2_thread = Thread(target=self.is_data, args=(client,))
+                l2_thread.start()
+                l2_thread.join(timeout=int(self.timeplayer)+1)
+                
+                if self.data == 'Lost':
+                    print('PLayer Timeout')
                     for client in self.cons_socket:
                         client.send(b'<CLIENT_LOST>'+cur_player.encode('utf-8'))
                     self.game_state = False
                     break
-                self.game.affichage()
-                print()
-                com = b'<CLIENT_UPDATE>'
-                for up in plate_update:
-                    com+=b','+up.encode('utf-8')
-                for client in self.cons_socket:
-                    client.send(com)
+                
+                else:
+                    d = (self.data).decode('utf-8')
+                    plate_update = self.game.coup(eval(d))
+                    if plate_update == 'Lost':
+                        for client in self.cons_socket:
+                            client.send(b'<CLIENT_LOST>'+cur_player.encode('utf-8'))
+                        self.game_state = False
+                        break
+                    self.game.affichage()
+                    print()
+                    com = b'<CLIENT_UPDATE>'
+                    for up in plate_update:
+                        com+=b','+up.encode('utf-8')
+                    for client in self.cons_socket:
+                        client.send(com)
+                        
+        #print("New server Game started")
+        #self.lobby()
+            
                     
+            
+                
+    def listening(self, client):
+        try:
+            self.serversocket.settimeout(float(self.timeplayer)+0.1)
+            data = client.recv(1024)
+            if self.game_state == True:
+                self.data_queue.put_nowait((data))
+        except : pass  #Timeout
+        
+    
+    def is_data(self, client):
+        print("Attente data")
+        timer = self.timeplayer
+        for _ in range(int(self.timeplayer/0.1)):
+            if not self.data_queue.empty():
+                self.data = self.data_queue.get()
+                print("Received :", self.data)
+            
+                break
+            com = b'<TIMER>'
+            timer -= 0.1
+            timer = round(timer,1)
+            msg = com + str(timer).encode('utf-8')
+            
+            client.send(msg)
+            time.sleep(0.1)
+        else : 
+            print("END CHRONO")
+            self.data = 'Lost'
                 
                 
-                
-                """
-                    for c in self.cons_socket:
-                        c.send(('<END_GAME>'+self.players[client]).encode('utf-8')) #Nom Perdant
-                """
+        
 s = threadedServer()                    
                     
                 

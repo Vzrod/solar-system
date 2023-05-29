@@ -34,7 +34,8 @@ class threadedClient(Thread):
         self.turn_cond = [False, b'GAME_TURN', self.is_turn]
         self.listen_update = [False, b'CLIENT_UPDATE', self.gui_update]
         self.client_lost = [False, b'CLIENT_LOST', self.lose_game]
-        self.dic = {self.game_init[1]:self.game_init, self.turn_cond[1]:self.turn_cond, self.listen_update[1]:self.listen_update, self.client_lost[1]:self.client_lost}
+        self.timerup = [False, b'TIMER', self.update_timer]
+        self.dic = {self.game_init[1]:self.game_init, self.turn_cond[1]:self.turn_cond, self.listen_update[1]:self.listen_update, self.client_lost[1]:self.client_lost, self.timerup[1]:self.timerup}
         
         
     def init_conn(self, host, port, pseudo):
@@ -88,23 +89,25 @@ class threadedClient(Thread):
     
     def listen(self):
         """Fonct lancée en thread pour écouter msg du serv et call fonct correspondante"""
-        print('Client sur écoute')
+        #print('Client sur écoute')
         
         self.socket.settimeout(None)
         try:
             data = self.socket.recv(2048)
-            print(data)
+            #print(data)
             header = data[data.find(b'<')+1 : data.find(b'>')]
             if header in self.dic:
-                print('data', data, ' == cond[1]', self.dic[header][1])
+                #print('data', data, ' == cond[1]', self.dic[header][1])
                 self.dic[header][2](data)
                 self.dic[header][0] = True
-                print(self.dic[header][0], 'Recu, ligne 57 :', self.dic[header][0])
             else : pass
         except socket.timeout: pass
         finally:
             self.start_listen()
-                
+           
+            
+           
+            
     def is_turn(self, data):
         self.fen.is_turn = True
         
@@ -113,13 +116,14 @@ class threadedClient(Thread):
         """Communique au GUI les cases à modifier"""
         self.fen.is_turn = False
         undata = data.decode('utf-8').split(',')[1:]
+        self.fen.gui_timer_up(5.0)
         for coord in undata:
             self.fen.update(eval(coord.replace('.',',')))
     
     def start_listen(self):
         """Fonct démarre le thread d'écoute"""
         if self.client_lost[0] != True:
-            print("start thread listen")
+            #print("start thread listen")
             t = Thread(target = self.listen)
             t.start()
         
@@ -136,6 +140,10 @@ class threadedClient(Thread):
         del self.socket
         self.fen.losemsg(pseudo.decode('utf-8'))
         
+
+    def update_timer(self, data):
+        undata = data.decode('utf-8')[7:]
+        self.fen.gui_timer_up(undata)
 
         
     def affichage_fen(self):

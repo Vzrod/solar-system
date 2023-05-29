@@ -38,13 +38,21 @@ class GUI(tk.Tk):
     
     
     def update(self, case):
-        print("CASE 2 =", case[2])
         if case[2]!=-1:
             self.dico[case[0],case[1]].configure(text=case[2],fg=self.color(case[2]), bg='#f0f0f0')
         else:
             self.dico[case[0],case[1]].configure(text=case[2],fg=self.color(case),bg="red")
         
         
+    def gui_timer_up(self, time):
+        self.timer_label.configure(text=f'Timer : {time}')
+        
+        
+    def timer(self):
+        
+        self.timer_label=tk.Label(self,text='Timer :',fg="black")
+        self.timer_label.grid(row=self.taille[0]+1)
+    
                 
     def color(self, case):
         l=["white","#56ea62","green","sienna1","red","turquoise4","#ff7700","purple","VioletRed"]
@@ -150,6 +158,8 @@ class GUI(tk.Tk):
         self.taille = taille
         self.dico_button()
         
+        self.timer()
+        
     def on_enter(self, event):
         if self.is_turn == True:
             try:
@@ -180,6 +190,8 @@ class GUI(tk.Tk):
                 dico[case].configure(bg="#d33",fg="black")
         game_state=2
         """
+        
+        self.timer_label.destroy()
         
         self.lost_label=tk.Label(self,text=f'{pseudo} has lost the game, click on the button retry in order to restart the game.',fg="black")
         self.lost_label.grid(row=self.taille[0]+1)
